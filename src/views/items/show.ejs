@@ -1,0 +1,39 @@
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4 mb-4"><%= item.title %></h1>
+    </div>
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <h5 class="card-title text-primary"><%= item.title %></h5>
+            <h6 class="card-subtitle mb-2 text-muted">By: <%= item.author %></h6>
+            <p class="card-text">
+                <span class="fw-bold">Genre:</span> <%= item.genre %><br>
+                <span class="fw-bold">Type:</span> <%= item.itemType %><br>
+                <span class="fw-bold">Status:</span> 
+                <span class="<%= item.isBorrowed ? 'text-danger' : 'text-success' %>">
+                    <%= item.isBorrowed ? 'Borrowed' : 'Available' %>
+                </span><br>
+                <% if (item.itemType === 'Book') { %>
+                    <span class="fw-bold">ISBN:</span> <%= item.isbn %>
+                <% } else { %>
+                    <span class="fw-bold">Issue Number:</span> <%= item.issueNumber %>
+                <% } %>
+            </p>
+            <div class="d-flex gap-2 justify-content-start">
+                <% if (!item.isBorrowed) { %>
+                    <form action="/items/<%= item.id %>/borrow" method="POST">
+                        <button type="submit" class="btn btn-primary rounded-pill">Borrow</button>
+                    </form>
+                <% } else { %>
+                    <form action="/items/<%= item.id %>/return" method="POST">
+                        <button type="submit" class="btn btn-success rounded-pill">Return</button>
+                    </form>
+                <% } %>
+                <a href="/items/<%= item.id %>/edit" class="btn btn-warning rounded-pill">Edit</a>
+                <form action="/items/<%= item.id %>/delete" method="POST">
+                    <button type="submit" class="btn btn-danger rounded-pill">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

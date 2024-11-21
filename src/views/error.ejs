@@ -1,0 +1,86 @@
+<!-- src/views/error.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .error-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .error-title {
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">📚 Library</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="/">All Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="/items/create">Add Item</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav> -->
+    <div class="container">
+        <div class="error-container">
+            <h1 class="error-title">
+                <%= typeof error !=='undefined' ? 'Error' : 'Oops!' %>
+            </h1>
+            <p class="error-message">
+                <%= typeof error !=='undefined' ? error : 'Something went wrong' %>
+                    <% if (typeof message !=='undefined' ) { %>
+                        <br>
+                        <%= message %>
+                            <% } %>
+            </p>
+            <a href="/items/create" class="back-link">Go to Home</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

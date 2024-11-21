@@ -1,0 +1,143 @@
+body {
+    background-color: #f8f9fa; /* Light gray background */
+    font-family: Arial, sans-serif;
+}
+
+h1, h5, h6 {
+    color: #343a40; /* Dark gray text */
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    color: #007bff; /* Bootstrap primary color */
+}
+
+.card-subtitle {
+    color: #6c757d; /* Bootstrap muted text */
+}
+
+/* Form Styles */
+form .form-control {
+    border-radius: 8px;
+}
+
+form .btn {
+    border-radius: 50px;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #007bff;
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+}
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #ffc107 !important; /* Bootstrap warning color */
+}
+
+/* Buttons */
+.btn {
+    border-radius: 50px;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+}
+
+/* Footer */
+footer {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 20px;
+}
+
+
+/* Card Styling */
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Buttons */
+.btn {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Page Heading */
+h1.display-4 {
+    font-weight: bold;
+    color: #343a40;
+}
+
+/* Status Text */
+.text-danger {
+    font-weight: bold;
+}
+
+.text-success {
+    font-weight: bold;
+}
+
+/* Header Styling */
+.navbar {
+    transition: all 0.3s ease;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .navbar-brand {
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: bold;
+}
+
+.navbar .nav-link {
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: #ffc107; /* Bootstrap warning color for hover effect */
+}
+
+.navbar-toggler-icon {
+    background-color: #fff;
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #343a40;
+    color: #6c757d;
+    font-size: 0.9rem;
+    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer span {
+    color: #adb5bd; /* Muted text color */
+    transition: color 0.3s ease;
+}
+
+.footer span:hover {
+    color: #ffc107; /* Add hover effect for footer text */
+}
