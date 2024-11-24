@@ -1,4 +1,3 @@
-// src/services/libraryService.ts
 import { Book, IBook } from '../models/Book.model';
 import { Magazine, IMagazine } from '../models/Magazine.model';
 
@@ -16,8 +15,9 @@ export class LibraryService {
 
  // Get all items
  async getAllItems(): Promise<(IBook | IMagazine)[]> {
+  console.log('getAll items working')
+
   try {
-    console.log('getAll items working')
     const books = await Book.find();
     const magazines = await Magazine.find();
     return [...books, ...magazines];
@@ -27,14 +27,11 @@ export class LibraryService {
   }
 }
 
-// Get item by ID
 async getItemById(id: string): Promise<IBook | IMagazine | null> {
   try {
-    // First check Books
     const book = await Book.findById(id);
     if (book) return book;
 
-    // Then check Magazines
     const magazine = await Magazine.findById(id);
     return magazine;
   } catch (error) {
@@ -46,6 +43,7 @@ async getItemById(id: string): Promise<IBook | IMagazine | null> {
 // Add item
 async addItem(item: IBook | IMagazine): Promise<IBook | IMagazine> {
   try {
+    console.log('library services reached.')
     let savedItem: IBook | IMagazine;
 
     if ('author' in item) {
@@ -55,13 +53,14 @@ async addItem(item: IBook | IMagazine): Promise<IBook | IMagazine> {
     } else {
       throw new Error('Invalid item type');
     }
+    console.log('services saved',savedItem)
 
     return savedItem;
   } catch (error) {
     this.handleError(error, 'Error adding item');
     throw error;
   }
-}
+} 
 
 // Update item
 async updateItem(id: string, itemData: Partial<IBook | IMagazine>): Promise<IBook | IMagazine | null> {

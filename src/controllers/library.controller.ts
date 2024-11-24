@@ -11,8 +11,10 @@ export class LibraryController {
   
   // Render index page
   async renderIndex(req: Request, res: Response): Promise<void> {
+    // console.log('isdklfjlksadjf=>')
     try {
       const items = await this.libraryService.getAllItems();
+      console.log('items=>',items)
       res.render('items/index', { 
         items
       });
@@ -24,9 +26,7 @@ export class LibraryController {
   // Render create page
   async renderCreate(req: Request, res: Response): Promise<void> {
     try {
-      res.render('items/create', { 
-        title: 'Add New Item'
-      })
+      res.render('items/create')
     } catch (error) {
       res.status(500).render('error', { error: 'Error fetching item' });
     }
@@ -72,6 +72,7 @@ export class LibraryController {
   async addItem(req: Request, res: Response): Promise<void> {
     try {
       const { itemType, ...itemData } = req.body;
+      console.log(req.body)
       let item;
   
       if (itemType === 'Book') {
@@ -86,6 +87,7 @@ export class LibraryController {
         });
         return;
       }
+      console.log('before calling library service')
       await this.libraryService.addItem(item);
       res.redirect('/items');
     } catch (error) {

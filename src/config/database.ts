@@ -8,7 +8,9 @@ class Database {
 
   private constructor() {
     this.connectionString = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB_NAME}?authSource=admin`;
+    // console.log(this.connectionString)
   }
+
 
   public static getInstance(): Database {
     if (!Database.instance) {

@@ -22,7 +22,7 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
     this.app.use(methodOverride('_method'));
-    console.log(__dirname)
+    // console.log(__dirname)
     this.app.use(express.static(path.join(__dirname, 'public'))); 
   }
 
@@ -32,7 +32,7 @@ class App {
   }
 
   private initializeRoutes(): void {
-    console.log('before')
+    // console.log('before')
 
     this.app.use('/', libraryRoutes);
  

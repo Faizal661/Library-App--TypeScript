@@ -8,6 +8,7 @@ router.get('/', libraryController.renderIndex);
 router.get('/items/create', libraryController.renderCreate);
 router.get('/items/:id/edit', libraryController.renderEdit);
 router.get('/items/:id', libraryController.renderShow);
+
 router.post('/items', libraryController.addItem);
 router.post('/items/:id', libraryController.updateItem);
 router.post('/items/:id/delete', libraryController.deleteItem);
