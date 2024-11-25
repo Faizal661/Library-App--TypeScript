@@ -5,8 +5,14 @@ import { Magazine } from '../models/Magazine.model';
 
 export class LibraryController {
   private libraryService: LibraryService;
+
   constructor() {
     this.libraryService = new LibraryService();
+    this.renderIndex = this.renderIndex.bind(this);
+    this.renderCreate = this.renderCreate.bind(this);
+    this.renderEdit = this.renderEdit.bind(this);
+    this.renderShow = this.renderShow.bind(this);
+    this.addItem = this.addItem.bind(this);
   }
   
   // Render index page
@@ -72,13 +78,24 @@ export class LibraryController {
   async addItem(req: Request, res: Response): Promise<void> {
     try {
       const { itemType, ...itemData } = req.body;
-      console.log(req.body)
-      let item;
-  
+      console.log('Received data:', req.body);
+
+      let transformedData;
+
       if (itemType === 'Book') {
-        item = new Book(itemData);
+        transformedData = {
+          ...itemData,
+          type: 'book', 
+          publishedYear: parseInt(itemData.publishedYear, 10),
+          isBorrowed: false
+        };
       } else if (itemType === 'Magazine') {
-        item = new Magazine(itemData);
+        transformedData = {
+          ...itemData,
+          type: 'magazine', 
+          publicationDate: new Date(itemData.publicationDate),
+          isBorrowed: false
+        };
       } else {
         res.status(400).render('layouts/main', { 
           body: 'error', 
@@ -87,26 +104,46 @@ export class LibraryController {
         });
         return;
       }
-      console.log('before calling library service')
-      await this.libraryService.addItem(item);
-      res.redirect('/items');
+
+      console.log('Transformed data:', transformedData);
+      
+      const savedItem = await this.libraryService.addItem(transformedData);
+      console.log('Saved item:', savedItem);
+      
+      res.redirect('/');
     } catch (error) {
-      res.status(500).render('error', { error: 'Error fetching item' });
+      console.error('Error in addItem:', error);
+      if (error instanceof Error) {
+        res.status(500).render('error', { error: error.message });
+      } else {
+        res.status(500).render('error', { error: 'Error adding item' });
+      }
     }
   }
-  
 
-  // Update item
   async updateItem(req: Request, res: Response): Promise<void> {
     try {
       const { itemType, ...itemData } = req.body;
+      console.log('Update data received:', req.body);
 
       if (!['Book', 'Magazine'].includes(itemType)) {
         res.status(400).render('error', { error: 'Invalid item type' });
         return;
       }
 
-      const updatedItem = await this.libraryService.updateItem(req.params.id, itemData);
+      // Transform the data similar to addItem
+      const transformedData = {
+        ...itemData,
+        type: itemType.toLowerCase(),
+        ...(itemType === 'Book' && {
+          publishedYear: parseInt(itemData.publishedYear, 10)
+        }),
+        ...(itemType === 'Magazine' && {
+          publicationDate: new Date(itemData.publicationDate)
+        })
+      };
+
+      const updatedItem = await this.libraryService.updateItem(req.params.id, transformedData);
       if (!updatedItem) {
         res.status(404).render('error', { error: 'Item not found' });
         return;
@@ -114,7 +151,12 @@ export class LibraryController {
 
       res.redirect(`/items/${req.params.id}`);
     } catch (error) {
-      res.status(500).render('error', { error: 'Error updating item' });
+      console.error('Error in updateItem:', error);
+      if (error instanceof Error) {
+        res.status(500).render('error', { error: error.message });
+      } else {
+        res.status(500).render('error', { error: 'Error updating item' });
+      }
     }
   }
 

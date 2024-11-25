@@ -1,9 +1,19 @@
 import { Book, IBook } from '../models/Book.model';
 import { Magazine, IMagazine } from '../models/Magazine.model';
+import { Item, IItem } from '../models/Item.model';
+import mongoose from 'mongoose';
+
+// Define types for creating new items (without Document properties)
+type CreateBookInput = Omit<IBook, keyof mongoose.Document | '_id'>;
+type CreateMagazineInput = Omit<IMagazine, keyof mongoose.Document | '_id'>;
+type CreateItemInput = CreateBookInput | CreateMagazineInput;
+
+// Define type for update operations
+type UpdateItemInput = Partial<CreateItemInput>;
 
 export class LibraryService {
-
   private handleError(error: unknown, context: string): never {
+    console.error(`Error in ${context}:`, error);
     if (error instanceof Error) {
       throw new Error(`${context}: ${error.message}`);
     } else if (typeof error === 'string') {
@@ -13,126 +23,198 @@ export class LibraryService {
     }
   }
 
- // Get all items
- async getAllItems(): Promise<(IBook | IMagazine)[]> {
-  console.log('getAll items working')
-
-  try {
-    const books = await Book.find();
-    const magazines = await Magazine.find();
-    return [...books, ...magazines];
-  } catch (error) {
-    this.handleError(error, 'Error fetching items');
-    throw error; 
-  }
-}
-
-async getItemById(id: string): Promise<IBook | IMagazine | null> {
-  try {
-    const book = await Book.findById(id);
-    if (book) return book;
-
-    const magazine = await Magazine.findById(id);
-    return magazine;
-  } catch (error) {
-    this.handleError(error, 'Error finding item');
-    throw error;
-  }
-}
-
-// Add item
-async addItem(item: IBook | IMagazine): Promise<IBook | IMagazine> {
-  try {
-    console.log('library services reached.')
-    let savedItem: IBook | IMagazine;
-
-    if ('author' in item) {
-      savedItem = await new Book(item).save();
-    } else if ('issueNumber' in item) {
-      savedItem = await new Magazine(item).save();
-    } else {
-      throw new Error('Invalid item type');
+  private validateBookData(item: CreateBookInput): void {
+    const requiredFields = ['title', 'author', 'isbn', 'publishedYear', 'genre'] as const;
+    const missingFields = requiredFields.filter(field => !item[field]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-    console.log('services saved',savedItem)
-
-    return savedItem;
-  } catch (error) {
-    this.handleError(error, 'Error adding item');
-    throw error;
   }
-} 
 
-// Update item
-async updateItem(id: string, itemData: Partial<IBook | IMagazine>): Promise<IBook | IMagazine | null> {
-  try {
-    const book = await Book.findByIdAndUpdate(id, itemData, { new: true });
-    if (book) return book;
-
-    const magazine = await Magazine.findByIdAndUpdate(id, itemData, { new: true });
-    return magazine;
-  } catch (error) {
-    this.handleError(error, 'Error updating item');
-    throw error;
-  }
-}
-
-// Delete item
-async deleteItem(id: string): Promise<boolean> {
-  try {
-    const book = await Book.findByIdAndDelete(id);
-    if (book) return true;
-
-    const magazine = await Magazine.findByIdAndDelete(id);
-    return !!magazine;
-  } catch (error) {
-    this.handleError(error, 'Error deleting item');
-    throw error;
-  }
-}
-
-// Borrow item
-async borrowItem(id: string): Promise<IBook | IMagazine | null> {
-  try {
-    const book = await Book.findById(id);
-    if (book && !book.isBorrowed) {
-      book.isBorrowed = true;
-      return await book.save();
+  private validateMagazineData(item: CreateMagazineInput): void {
+    const requiredFields = ['title', 'publisher', 'issueNumber', 'publicationDate'] as const;
+    const missingFields = requiredFields.filter(field => !item[field]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-
-    const magazine = await Magazine.findById(id);
-    if (magazine && !magazine.isBorrowed) {
-      magazine.isBorrowed = true;
-      return await magazine.save();
-    }
-
-    return null;
-  } catch (error) {
-    this.handleError(error, 'Error borrowing item');
-    throw error;
   }
-}
 
-// Return item
-async returnItem(id: string): Promise<IBook | IMagazine | null> {
-  try {
-    const book = await Book.findById(id);
-    if (book && book.isBorrowed) {
-      book.isBorrowed = false;
-      return await book.save();
+  // Get all items
+  async getAllItems(): Promise<IItem[]> {
+    try {
+      const items = await Item.find().exec();
+      console.log('Retrieved items:', items);
+      return items;
+    } catch (error) {
+      this.handleError(error, 'Error fetching items');
     }
-
-    const magazine = await Magazine.findById(id);
-    if (magazine && magazine.isBorrowed) {
-      magazine.isBorrowed = false;
-      return await magazine.save();
-    }
-
-    return null;
-  } catch (error) {
-    this.handleError(error, 'Error returning item');
-    throw error;
   }
-}
+
+  // Get item by ID
+  async getItemById(id: string): Promise<IItem | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid ID format');
+      }
+      
+      const item = await Item.findById(id).exec();
+      console.log(`Retrieved item with ID ${id}:`, item);
+      return item;
+    } catch (error) {
+      this.handleError(error, 'Error finding item');
+    }
+  }
+
+  // Add item
+  async addItem(itemData: CreateItemInput): Promise<IItem> {
+    console.log('Adding new item:', JSON.stringify(itemData, null, 2));
+    try {
+      let newItem: mongoose.Document;
+
+      if (itemData.type === 'book') {
+        this.validateBookData(itemData);
+        newItem = new Book(itemData);
+        const savedItem = await newItem.save();
+      } else if (itemData.type === 'magazine') {
+        this.validateMagazineData(itemData);
+        newItem = new Magazine(itemData);
+        const savedItem = await newItem.save();
+      } else {
+        throw new Error('Invalid item type');
+      }
+
+      const savedItem = await newItem.save();
+      console.log('Item saved successfully:', savedItem);
+      return savedItem as IItem;
+    } catch (error) {
+      this.handleError(error, 'Error adding item');
+    }
+  }
+
+  // Update item
+  async updateItem(id: string, itemData: UpdateItemInput): Promise<IItem | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid ID format');
+      }
+
+      const existingItem = await Item.findById(id).exec();
+      if (!existingItem) {
+        throw new Error('Item not found');
+      }
+
+      // Type guard to check item type
+      if (existingItem.type === 'book' && this.isBookData(itemData)) {
+        this.validateBookData({ ...existingItem.toObject(), ...itemData });
+      } else if (existingItem.type === 'magazine' && this.isMagazineData(itemData)) {
+        this.validateMagazineData({ ...existingItem.toObject(), ...itemData });
+      }
+
+      const updatedItem = await Item.findByIdAndUpdate(
+        id,
+        { $set: itemData },
+        { new: true, runValidators: true }
+      ).exec();
+      
+      console.log('Item updated successfully:', updatedItem);
+      return updatedItem;
+    } catch (error) {
+      this.handleError(error, 'Error updating item');
+    }
+  }
+
+  // Type guards for update validation
+  private isBookData(data: UpdateItemInput): data is Partial<CreateBookInput> {
+    return 'type' in data && data.type === 'book';
+  }
+
+  private isMagazineData(data: UpdateItemInput): data is Partial<CreateMagazineInput> {
+    return 'type' in data && data.type === 'magazine';
+  }
+
+  // Delete item
+  async deleteItem(id: string): Promise<boolean> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid ID format');
+      }
+
+      const result = await Item.findByIdAndDelete(id).exec();
+      const success = !!result;
+      console.log(`Item deletion ${success ? 'successful' : 'failed'} for ID: ${id}`);
+      return success;
+    } catch (error) {
+      this.handleError(error, 'Error deleting item');
+    }
+  }
+
+  // Borrow item
+  async borrowItem(id: string): Promise<IItem | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid ID format');
+      }
+
+      const item = await Item.findById(id).exec();
+      if (!item) {
+        throw new Error('Item not found');
+      }
+
+      if (item.get('isBorrowed')) {
+        throw new Error('Item is already borrowed');
+      }
+
+      item.set('isBorrowed', true);
+      const updatedItem = await item.save();
+      console.log('Item borrowed successfully:', updatedItem);
+      return updatedItem;
+    } catch (error) {
+      this.handleError(error, 'Error borrowing item');
+    }
+  }
+
+  // Return item
+  async returnItem(id: string): Promise<IItem | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid ID format');
+      }
+
+      const item = await Item.findById(id).exec();
+      if (!item) {
+        throw new Error('Item not found');
+      }
+
+      if (!item.get('isBorrowed')) {
+        throw new Error('Item is not currently borrowed');
+      }
+
+      item.set('isBorrowed', false);
+      const updatedItem = await item.save();
+      console.log('Item returned successfully:', updatedItem);
+      return updatedItem;
+    } catch (error) {
+      this.handleError(error, 'Error returning item');
+    }
+  }
+
+  // Search items by title or type
+  async searchItems(query: string): Promise<IItem[]> {
+    try {
+      const items = await Item.find({
+        $or: [
+          { title: { $regex: query, $options: 'i' } },
+          { type: { $regex: query, $options: 'i' } }
+        ]
+      }).exec();
+      console.log(`Found ${items.length} items matching query: ${query}`);
+      return items;
+    } catch (error) {
+      this.handleError(error, 'Error searching items');
+    }
+  }
 }
 
 export default new LibraryService();

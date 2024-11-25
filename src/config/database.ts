@@ -7,7 +7,7 @@ class Database {
   private connectionString: string;
 
   private constructor() {
-    this.connectionString = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB_NAME}?authSource=admin`;
+    this.connectionString =  'mongodb://127.0.0.1:27017/LibraryApp';
     // console.log(this.connectionString)
   }
 
