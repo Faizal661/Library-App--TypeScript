@@ -1,4 +1,3 @@
-// src/app.ts
 import express from 'express';
 import path from 'path';
 import methodOverride from 'method-override';
@@ -22,7 +21,6 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(express.json());
     this.app.use(methodOverride('_method'));
-    // console.log(__dirname)
     this.app.use(express.static(path.join(__dirname, 'public'))); 
   }
 
@@ -32,8 +30,6 @@ class App {
   }
 
   private initializeRoutes(): void {
-    // console.log('before')
-
     this.app.use('/', libraryRoutes);
  
     this.app.use((req, res) => {
@@ -43,7 +39,6 @@ class App {
       });
     });
 
-    // Error handler middleware
     this.app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
       console.error('Error:', err);
       res.status(500).render('error', {
@@ -65,5 +60,4 @@ class App {
     }
   }
 }
-
 export default new App();

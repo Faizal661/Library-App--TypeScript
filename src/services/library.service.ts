@@ -3,15 +3,13 @@ import { Magazine, IMagazine } from '../models/Magazine.model';
 import { Item, IItem } from '../models/Item.model';
 import mongoose from 'mongoose';
 
-// Define types for creating new items (without Document properties)
 type CreateBookInput = Omit<IBook, keyof mongoose.Document | '_id'>;
 type CreateMagazineInput = Omit<IMagazine, keyof mongoose.Document | '_id'>;
 type CreateItemInput = CreateBookInput | CreateMagazineInput;
 
-// Define type for update operations
-type UpdateItemInput = Partial<CreateItemInput>;
 
 export class LibraryService {
+
   private handleError(error: unknown, context: string): never {
     console.error(`Error in ${context}:`, error);
     if (error instanceof Error) {
@@ -41,7 +39,6 @@ export class LibraryService {
     }
   }
 
-  // Get all items
   async getAllItems(): Promise<IItem[]> {
     try {
       const items = await Item.find().exec();
@@ -52,35 +49,16 @@ export class LibraryService {
     }
   }
 
-  // Get item by ID
-  async getItemById(id: string): Promise<IItem | null> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error('Invalid ID format');
-      }
-      
-      const item = await Item.findById(id).exec();
-      console.log(`Retrieved item with ID ${id}:`, item);
-      return item;
-    } catch (error) {
-      this.handleError(error, 'Error finding item');
-    }
-  }
-
-  // Add item
   async addItem(itemData: CreateItemInput): Promise<IItem> {
-    console.log('Adding new item:', JSON.stringify(itemData, null, 2));
     try {
       let newItem: mongoose.Document;
-
+      
       if (itemData.type === 'book') {
         this.validateBookData(itemData);
         newItem = new Book(itemData);
-        const savedItem = await newItem.save();
       } else if (itemData.type === 'magazine') {
         this.validateMagazineData(itemData);
         newItem = new Magazine(itemData);
-        const savedItem = await newItem.save();
       } else {
         throw new Error('Invalid item type');
       }
@@ -93,48 +71,6 @@ export class LibraryService {
     }
   }
 
-  // Update item
-  async updateItem(id: string, itemData: UpdateItemInput): Promise<IItem | null> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error('Invalid ID format');
-      }
-
-      const existingItem = await Item.findById(id).exec();
-      if (!existingItem) {
-        throw new Error('Item not found');
-      }
-
-      // Type guard to check item type
-      if (existingItem.type === 'book' && this.isBookData(itemData)) {
-        this.validateBookData({ ...existingItem.toObject(), ...itemData });
-      } else if (existingItem.type === 'magazine' && this.isMagazineData(itemData)) {
-        this.validateMagazineData({ ...existingItem.toObject(), ...itemData });
-      }
-
-      const updatedItem = await Item.findByIdAndUpdate(
-        id,
-        { $set: itemData },
-        { new: true, runValidators: true }
-      ).exec();
-      
-      console.log('Item updated successfully:', updatedItem);
-      return updatedItem;
-    } catch (error) {
-      this.handleError(error, 'Error updating item');
-    }
-  }
-
-  // Type guards for update validation
-  private isBookData(data: UpdateItemInput): data is Partial<CreateBookInput> {
-    return 'type' in data && data.type === 'book';
-  }
-
-  private isMagazineData(data: UpdateItemInput): data is Partial<CreateMagazineInput> {
-    return 'type' in data && data.type === 'magazine';
-  }
-
-  // Delete item
   async deleteItem(id: string): Promise<boolean> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -200,21 +136,6 @@ export class LibraryService {
     }
   }
 
-  // Search items by title or type
-  async searchItems(query: string): Promise<IItem[]> {
-    try {
-      const items = await Item.find({
-        $or: [
-          { title: { $regex: query, $options: 'i' } },
-          { type: { $regex: query, $options: 'i' } }
-        ]
-      }).exec();
-      console.log(`Found ${items.length} items matching query: ${query}`);
-      return items;
-    } catch (error) {
-      this.handleError(error, 'Error searching items');
-    }
-  }
 }
 
 export default new LibraryService();
